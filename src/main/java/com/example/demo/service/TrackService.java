@@ -1,10 +1,12 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.TrackWithAlbumDto;
 import com.example.demo.model.Track;
 import com.example.demo.repository.TrackRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
 
@@ -18,6 +20,18 @@ public class TrackService {
 
     public Page<Track> getAllTrack(Pageable pageable) {
         return trackRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TrackWithAlbumDto> getTracksNPlusOne(Pageable pageable) {
+        return trackRepository.findPageForNPlusOne(pageable)
+                .map(this::toTrackWithAlbumDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TrackWithAlbumDto> getTracksOptimized(Pageable pageable) {
+        return trackRepository.findPageWithAlbum(pageable)
+                .map(this::toTrackWithAlbumDto);
     }
 
     public Track getTrackById(Long id) {
@@ -47,5 +61,20 @@ public class TrackService {
 
     public void deleteTrack(Long id) {
         trackRepository.deleteById(id);
+    }
+
+    private TrackWithAlbumDto toTrackWithAlbumDto(Track track) {
+        String albumTitle = track.getAlbum() != null ? track.getAlbum().getTitle() : null;
+        return new TrackWithAlbumDto(
+                track.getTrackId(),
+                track.getName(),
+                track.getAlbumId(),
+                albumTitle,
+                track.getMediaTypeId(),
+                track.getGenreId(),
+                track.getComposer(),
+                track.getMilliseconds(),
+                track.getBytes(),
+                track.getUnitPrice());
     }
 }
