@@ -3,8 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.model.Artist;
 import com.example.demo.service.ArtistService;
 
-import jakarta.websocket.server.PathParam;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+
 public class Album {
     private Long albumId;
     private String title;
