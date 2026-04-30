@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.GenreRepository">
+
+	<resultMap id="GenreResultMap" type="com.example.demo.model.Genre">
+		<id property="id" column="GenreId" />
+		<result property="name" column="Name" />
+	</resultMap>
+
+	<select id="getAllGenre" resultMap="GenreResultMap">
+		SELECT GenreId, Name
+		FROM Genre
+		ORDER BY GenreId
+	</select>
+
+	<select id="getGenreById" parameterType="long" resultMap="GenreResultMap">
+		SELECT GenreId, Name
+		FROM Genre
+		WHERE GenreId = #{id}
+	</select>
+
+	<insert id="createGenre" parameterType="com.example.demo.model.Genre"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO Genre (Name)
+		VALUES (#{name})
+	</insert>
+
+	<update id="updateGenre">
+		UPDATE Genre
+		SET Name = #{genre.name}
+		WHERE GenreId = #{id}
+	</update>
+
+	<delete id="deleteGenre" parameterType="long">
+		DELETE FROM Genre
+		WHERE GenreId = #{id}
+	</delete>
+
+	<select id="searchGenre" parameterType="string" resultMap="GenreResultMap">
+		SELECT GenreId, Name
+		FROM Genre
+		WHERE Name LIKE CONCAT('%', #{keyword}, '%')
+		ORDER BY GenreId
+	</select>
+
+</mapper>
