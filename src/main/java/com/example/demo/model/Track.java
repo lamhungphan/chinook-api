@@ -6,6 +6,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 @Table(name = "Track")
@@ -20,6 +23,10 @@ public class Track {
 
     @Column(name = "AlbumId")
     private Long albumId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "AlbumId", referencedColumnName = "AlbumId", insertable = false, updatable = false)
+    private AlbumJpa album;
 
     @Column(name = "MediaTypeId")
     private Long mediaTypeId;
@@ -61,6 +68,14 @@ public class Track {
 
 	public void setAlbumId(Long albumId) {
 		this.albumId = albumId;
+	}
+
+	public AlbumJpa getAlbum() {
+		return album;
+	}
+
+	public void setAlbum(AlbumJpa album) {
+		this.album = album;
 	}
 
 	public Long getMediaTypeId() {

@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.TrackWithAlbumDto;
 import com.example.demo.model.Track;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,6 +40,24 @@ public class TrackController {
 		return trackService.getAllTrack(pageRequest);
 	}
 
+	@GetMapping("/n-plus-one")
+	public Page<TrackWithAlbumDto> getTracksNPlusOne(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "trackId") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDir) {
+		return trackService.getTracksNPlusOne(buildPageable(page, size, sortBy, sortDir));
+	}
+
+	@GetMapping("/optimized")
+	public Page<TrackWithAlbumDto> getTracksOptimized(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "trackId") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDir) {
+		return trackService.getTracksOptimized(buildPageable(page, size, sortBy, sortDir));
+	}
+
 	@GetMapping("/{id}")
 	public Track getTrackById(@PathVariable Long id) {
 		return trackService.getTrackById(id);
@@ -56,5 +76,12 @@ public class TrackController {
 	@DeleteMapping("/{id}")
 	public void deleteTrack(@PathVariable Long id) {
 		trackService.deleteTrack(id);
+	}
+
+	private Pageable buildPageable(int page, int size, String sortBy, String sortDir) {
+		Sort sort = sortDir.equalsIgnoreCase("desc")
+				? Sort.by(sortBy).descending()
+				: Sort.by(sortBy).ascending();
+		return PageRequest.of(page, size, sort);
 	}
 }
