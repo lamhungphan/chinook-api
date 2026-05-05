@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.TimedResponse;
 import com.example.demo.dto.TrackWithAlbumDto;
 import com.example.demo.model.Track;
 import com.example.demo.service.TrackService;
@@ -51,6 +52,24 @@ public class TrackController {
 			@RequestParam(defaultValue = "trackId") String sortBy,
 			@RequestParam(defaultValue = "asc") String sortDir) {
 		return trackService.getTracksOptimized(buildPageable(page, size, sortBy, sortDir));
+	}
+
+	@GetMapping("/n-plus-one/single-thread")
+	public TimedResponse<Page<TrackWithAlbumDto>> getTracksNPlusOneSingleThread(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(defaultValue = "trackId") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDir) {
+		return trackService.getTracksNPlusOneSingleThread(buildPageable(page, size, sortBy, sortDir));
+	}
+
+	@GetMapping("/n-plus-one/multi-thread")
+	public TimedResponse<Page<TrackWithAlbumDto>> getTracksNPlusOneMultiThread(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(defaultValue = "trackId") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDir) {
+		return trackService.getTracksNPlusOneMultiThread(buildPageable(page, size, sortBy, sortDir));
 	}
 
 	@GetMapping("/{id:\\d+}")

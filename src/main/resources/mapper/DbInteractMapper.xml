@@ -88,6 +88,11 @@
 		ORDER BY ChangeDate DESC, LogId DESC
 	</select>
 
+	<!-- Cleanup log cũ - dùng bởi cron job @Scheduled -->
+	<delete id="deleteOldPriceLogs">
+		DELETE FROM TrackPriceLog WHERE ChangeDate &lt; #{cutoff}
+	</delete>
+
 	<!-- Truy vấn CTE phân tích doanh thu nghệ sĩ -->
 	<select id="selectArtistRevenue" resultMap="ArtistRevenueMap">
 		WITH ArtistRevenue AS (

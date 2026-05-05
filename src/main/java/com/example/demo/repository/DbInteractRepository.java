@@ -7,6 +7,7 @@ import com.example.demo.dto.TrackPriceLogDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -25,6 +26,8 @@ public interface DbInteractRepository {
 	String callFormatDuration(@Param("ms") Long ms);
 
 	List<TrackPriceLogDto> selectTrackPriceLogs(@Param("limit") Integer limit);
+
+	int deleteOldPriceLogs(@Param("cutoff") LocalDateTime cutoff);
 
 	List<ArtistRevenueDto> selectArtistRevenue(@Param("minTracksSold") Long minTracksSold);
 }
