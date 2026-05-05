@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.DbInteractRepository">
+
+	<resultMap id="CustomerOrderMap" type="com.example.demo.dto.CustomerOrderDto">
+		<constructor>
+			<arg column="FullName" javaType="java.lang.String" />
+			<arg column="Country" javaType="java.lang.String" />
+			<arg column="TotalSpent" javaType="java.math.BigDecimal" />
+		</constructor>
+	</resultMap>
+
+	<resultMap id="TrackDetailInfoMap" type="com.example.demo.dto.TrackDetailInfoDto">
+		<constructor>
+			<arg column="TrackName" javaType="java.lang.String" />
+			<arg column="GenreName" javaType="java.lang.String" />
+			<arg column="Milliseconds" javaType="java.lang.Long" />
+			<arg column="DurationRank" javaType="java.lang.Long" />
+			<arg column="FormattedDuration" javaType="java.lang.String" />
+		</constructor>
+	</resultMap>
+
+	<resultMap id="TrackPriceLogMap" type="com.example.demo.dto.TrackPriceLogDto">
+		<constructor>
+			<arg column="LogId" javaType="java.lang.Long" />
+			<arg column="TrackId" javaType="java.lang.Long" />
+			<arg column="OldPrice" javaType="java.math.BigDecimal" />
+			<arg column="NewPrice" javaType="java.math.BigDecimal" />
+			<arg column="ChangeDate" javaType="java.time.LocalDateTime" />
+		</constructor>
+	</resultMap>
+
+	<resultMap id="ArtistRevenueMap" type="com.example.demo.dto.ArtistRevenueDto">
+		<constructor>
+			<arg column="ArtistName" javaType="java.lang.String" />
+			<arg column="TotalRevenue" javaType="java.math.BigDecimal" />
+			<arg column="TracksSold" javaType="java.lang.Long" />
+			<arg column="AvgRevenuePerTrack" javaType="java.math.BigDecimal" />
+		</constructor>
+	</resultMap>
+
+	<!-- View vw_CustomerOrders -->
+	<select id="selectCustomerOrders" resultMap="CustomerOrderMap">
+		SELECT FullName, Country, TotalSpent
+		FROM vw_CustomerOrders
+		ORDER BY TotalSpent DESC
+	</select>
+
+	<!-- View vw_TrackDetailInfo (kết hợp gọi function fn_FormatDuration để định dạng thời lượng) -->
+	<select id="selectTrackDetailInfo" resultMap="TrackDetailInfoMap">
+		SELECT
+		    v.TrackName,
+		    v.GenreName,
+		    v.Milliseconds,
+		    v.DurationRank,
+		    dbo.fn_FormatDuration(v.Milliseconds) AS FormattedDuration
+		FROM vw_TrackDetailInfo v
+		<where>
+			<if test="genreName != null and genreName != ''">
+				v.GenreName = #{genreName}
+			</if>
+		</where>
+		ORDER BY v.GenreName, v.DurationRank
+		<if test="limit != null">
+			OFFSET 0 ROWS FETCH NEXT #{limit} ROWS ONLY
+		</if>
+	</select>
+
+	<!-- Procedure sp_UpdateGenrePrice -->
+	<update id="callUpdateGenrePrice" statementType="CALLABLE">
+		{ call sp_UpdateGenrePrice(
+		    #{genreName, mode=IN, jdbcType=NVARCHAR},
+		    #{percentage, mode=IN, jdbcType=FLOAT}
+		) }
+	</update>
+
+	<!-- Function fn_FormatDuration -->
+	<select id="callFormatDuration" resultType="string">
+		SELECT dbo.fn_FormatDuration(#{ms})
+	</select>
+
+	<!-- Bảng log do trigger trg_AfterPriceUpdate ghi -->
+	<select id="selectTrackPriceLogs" resultMap="TrackPriceLogMap">
+		SELECT
+		<if test="limit != null">TOP (#{limit})</if>
+		    LogId, TrackId, OldPrice, NewPrice, ChangeDate
+		FROM TrackPriceLog
+		ORDER BY ChangeDate DESC, LogId DESC
+	</select>
+
+	<!-- Truy vấn CTE phân tích doanh thu nghệ sĩ -->
+	<select id="selectArtistRevenue" resultMap="ArtistRevenueMap">
+		WITH ArtistRevenue AS (
+		    SELECT
+		        art.Name AS ArtistName,
+		        SUM(il.UnitPrice * il.Quantity) AS TotalRevenue,
+		        COUNT(il.TrackId) AS TracksSold
+		    FROM Artist art
+		    JOIN Album alb ON art.ArtistId = alb.ArtistId
+		    JOIN Track t ON alb.AlbumId = t.AlbumId
+		    JOIN InvoiceLine il ON t.TrackId = il.TrackId
+		    GROUP BY art.Name
+		),
+		ArtistMetrics AS (
+		    SELECT
+		        ArtistName,
+		        TotalRevenue,
+		        TracksSold,
+		        (TotalRevenue / NULLIF(TracksSold, 0)) AS AvgRevenuePerTrack
+		    FROM ArtistRevenue
+		)
+		SELECT ArtistName, TotalRevenue, TracksSold, AvgRevenuePerTrack
+		FROM ArtistMetrics
+		WHERE TracksSold &gt; #{minTracksSold}
+		ORDER BY AvgRevenuePerTrack DESC
+	</select>
+
+</mapper>
