@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.repository.TrackRepository">
+
+	<resultMap id="TrackResultMap" type="com.example.demo.model.Track">
+		<id property="trackId" column="TrackId" />
+		<result property="name" column="Name" />
+		<result property="albumId" column="AlbumId" />
+		<result property="mediaTypeId" column="MediaTypeId" />
+		<result property="genreId" column="GenreId" />
+		<result property="composer" column="Composer" />
+		<result property="milliseconds" column="Milliseconds" />
+		<result property="bytes" column="Bytes" />
+		<result property="unitPrice" column="UnitPrice" />
+	</resultMap>
+
+	<resultMap id="TrackWithAlbumDtoMap" type="com.example.demo.dto.TrackWithAlbumDto">
+		<constructor>
+			<arg column="TrackId" javaType="java.lang.Long" />
+			<arg column="Name" javaType="java.lang.String" />
+			<arg column="AlbumId" javaType="java.lang.Long" />
+			<arg column="AlbumTitle" javaType="java.lang.String" />
+			<arg column="MediaTypeId" javaType="java.lang.Long" />
+			<arg column="GenreId" javaType="java.lang.Long" />
+			<arg column="Composer" javaType="java.lang.String" />
+			<arg column="Milliseconds" javaType="java.lang.Long" />
+			<arg column="Bytes" javaType="java.lang.Long" />
+			<arg column="UnitPrice" javaType="java.lang.Double" />
+		</constructor>
+	</resultMap>
+
+	<sql id="TrackColumns">
+		TrackId, Name, AlbumId, MediaTypeId, GenreId, Composer, Milliseconds, Bytes, UnitPrice
+	</sql>
+
+	<sql id="orderByTrack">
+		ORDER BY
+		<choose>
+			<when test="sortKey == 'trackId'">TrackId</when>
+			<when test="sortKey == 'name'">Name</when>
+			<when test="sortKey == 'albumId'">AlbumId</when>
+			<when test="sortKey == 'mediaTypeId'">MediaTypeId</when>
+			<when test="sortKey == 'genreId'">GenreId</when>
+			<when test="sortKey == 'composer'">Composer</when>
+			<when test="sortKey == 'milliseconds'">Milliseconds</when>
+			<when test="sortKey == 'bytes'">Bytes</when>
+			<when test="sortKey == 'unitPrice'">UnitPrice</when>
+			<otherwise>TrackId</otherwise>
+		</choose>
+		<choose>
+			<when test="sortAscending">ASC</when>
+			<otherwise>DESC</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="orderByTrackJoin">
+		ORDER BY
+		<choose>
+			<when test="sortKey == 'trackId'">t.TrackId</when>
+			<when test="sortKey == 'name'">t.Name</when>
+			<when test="sortKey == 'albumId'">t.AlbumId</when>
+			<when test="sortKey == 'mediaTypeId'">t.MediaTypeId</when>
+			<when test="sortKey == 'genreId'">t.GenreId</when>
+			<when test="sortKey == 'composer'">t.Composer</when>
+			<when test="sortKey == 'milliseconds'">t.Milliseconds</when>
+			<when test="sortKey == 'bytes'">t.Bytes</when>
+			<when test="sortKey == 'unitPrice'">t.UnitPrice</when>
+			<otherwise>t.TrackId</otherwise>
+		</choose>
+		<choose>
+			<when test="sortAscending">ASC</when>
+			<otherwise>DESC</otherwise>
+		</choose>
+	</sql>
+
+	<select id="countTracks" resultType="long">
+		SELECT COUNT(*) FROM Track
+	</select>
+
+	<select id="selectTracksPage" resultMap="TrackResultMap">
+		SELECT
+		<include refid="TrackColumns" />
+		FROM Track
+		<include refid="orderByTrack" />
+		OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+	</select>
+
+	<select id="selectTrackById" resultMap="TrackResultMap">
+		SELECT
+		<include refid="TrackColumns" />
+		FROM Track
+		WHERE TrackId = #{id}
+	</select>
+
+	<insert id="insertTrack" useGeneratedKeys="true" keyProperty="trackId" keyColumn="TrackId">
+		INSERT INTO Track (Name, AlbumId, MediaTypeId, GenreId, Composer, Milliseconds, Bytes, UnitPrice)
+		VALUES (#{name}, #{albumId}, #{mediaTypeId}, #{genreId}, #{composer}, #{milliseconds}, #{bytes}, #{unitPrice})
+	</insert>
+
+	<update id="updateTrack">
+		UPDATE Track
+		SET Name = #{track.name},
+		    AlbumId = #{track.albumId},
+		    MediaTypeId = #{track.mediaTypeId},
+		    GenreId = #{track.genreId},
+		    Composer = #{track.composer},
+		    Milliseconds = #{track.milliseconds},
+		    Bytes = #{track.bytes},
+		    UnitPrice = #{track.unitPrice}
+		WHERE TrackId = #{id}
+	</update>
+
+	<delete id="deleteTrack">
+		DELETE FROM Track WHERE TrackId = #{id}
+	</delete>
+
+	<select id="selectAlbumTitleByAlbumId" resultType="string">
+		SELECT Title FROM Album WHERE AlbumId = #{albumId}
+	</select>
+
+	<select id="selectTracksWithAlbumJoin" resultMap="TrackWithAlbumDtoMap">
+		SELECT t.TrackId, t.Name, t.AlbumId, al.Title AS AlbumTitle,
+		       t.MediaTypeId, t.GenreId, t.Composer, t.Milliseconds, t.Bytes, t.UnitPrice
+		FROM Track t
+		LEFT JOIN Album al ON t.AlbumId = al.AlbumId
+		<include refid="orderByTrackJoin" />
+		OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+	</select>
+
+</mapper>
