@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.IAlbumDao">
+
+	<resultMap id="AlbumResultMap" type="com.example.demo.dataitem.AlbumItem">
+		<id property="albumId" column="AlbumId" />
+		<result property="title" column="Title" />
+		<result property="artistId" column="ArtistId" />
+	</resultMap>
+
+	<sql id="AlbumColumns">AlbumId, Title, ArtistId</sql>
+
+	<select id="selectAlbumList" resultMap="AlbumResultMap"> SELECT <include
+			refid="AlbumColumns" /> FROM Album </select>
+
+	<select id="selectAlbumById" resultMap="AlbumResultMap"> SELECT <include
+			refid="AlbumColumns" /> FROM Album WHERE AlbumId = #{id}</select>
+
+	<insert id="insertAlbum" useGeneratedKeys="true" keyProperty="albumId"
+		keyColumn="AlbumId">
+		INSERT INTO Album(Title, ArtistId) VALUES
+		(#{title},#{artistId})
+	</insert>
+
+	<update id="updateAlbum">
+		UPDATE Album
+		SET Title = #{AlbumItem.title},
+		ArtistId = #{AlbumItem.artistId}
+		WHERE AlbumId = #{id}
+	</update>
+
+	<delete id="deleteAlbum">
+		DELETE FROM Album WHERE AlbumId = #{id}
+	</delete>
+</mapper>

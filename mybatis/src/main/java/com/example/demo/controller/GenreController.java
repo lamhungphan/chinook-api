@@ -1,8 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Genre;
-import com.example.demo.service.GenreService;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,45 +10,47 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dataitem.GenreItem;
+import com.example.demo.service.GenreService;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/genres")
 public class GenreController {
-	private final GenreService genreService;
+	private final GenreService service;
 
 	public GenreController(GenreService genreService) {
-		this.genreService = genreService;
+		this.service = genreService;
 	}
 
 	@GetMapping
-	public List<Genre> getAllGenre() {
-		return genreService.getAllGenre();
+	public List<GenreItem> getAllGenre() {
+		return service.getAllGenre();
 	}
 
 	@GetMapping("/{id}")
-	public Genre getGenreById(@PathVariable Long id) {
-		return genreService.getGenreById(id);
+	public GenreItem getGenreById(@PathVariable Long id) {
+		return service.getGenreById(id);
 	}
 
 	@PostMapping()
-	public void createGenre(@RequestBody Genre genre) {
-		genreService.createGenre(genre);
+	public void createGenre(@RequestBody GenreItem genre) {
+		service.createGenre(genre);
 	}
 
 	@PutMapping("/{id}")
-	public void updateGenre(@PathVariable Long id, @RequestBody Genre genre) {
-		genreService.updateGenre(id, genre);
+	public void updateGenre(@PathVariable Long id, @RequestBody GenreItem genre) {
+		service.updateGenre(id, genre);
 	}
 
 	@DeleteMapping("/{id}")
 	public void deletGenre(@PathVariable Long id) {
-		genreService.deleteGenre(id);
+		service.deleteGenre(id);
 	}
 
 	@GetMapping("/search")
-	public List<Genre> searchgenre(@RequestParam String keyword) {
-		return genreService.searchGenre(keyword);
+	public List<GenreItem> searchgenre(@RequestParam String keyword) {
+		return service.searchGenre(keyword);
 	}
-
 }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.ITrackDao">
+
+	<resultMap id="TrackResultMap" type="com.example.demo.dataitem.TrackItem">
+		<id property="trackId" column="TrackId" />
+		<result property="name" column="Name" />
+		<result property="albumId" column="AlbumId" />
+		<result property="mediaTypeId" column="MediaTypeId" />
+		<result property="genreId" column="GenreId" />
+		<result property="composer" column="Composer" />
+		<result property="milliseconds" column="Milliseconds" />
+		<result property="bytes" column="Bytes" />
+		<result property="unitPrice" column="UnitPrice" />
+	</resultMap>
+
+	<sql id="TrackColumns">
+		TrackId, Name, AlbumId, MediaTypeId, GenreId, Composer, Milliseconds,
+		Bytes, UnitPrice
+	</sql>
+
+	<select id="countTrackItems" resultType="long">
+		SELECT COUNT(*) FROM Track
+	</select>
+
+	<select id="selectTrackList" resultMap="TrackResultMap"> SELECT <include
+			refid="TrackColumns" /> FROM Track ORDER BY TrackId OFFSET #{offset}
+		ROWS FETCH NEXT #{limit} ROWS ONLY </select>
+
+	<select id="selectTrackById" resultMap="TrackResultMap"> SELECT <include
+			refid="TrackColumns" /> FROM Track WHERE TrackId = #{id} </select>
+
+	<insert id="insertTrack" useGeneratedKeys="true" keyProperty="trackId"
+		keyColumn="TrackId">
+		INSERT INTO Track (Name, AlbumId, MediaTypeId, GenreId, Composer,
+		Milliseconds, Bytes, UnitPrice)
+		VALUES (#{name}, #{albumId}, #{mediaTypeId}, #{genreId}, #{composer},
+		#{milliseconds}, #{bytes}, #{unitPrice})
+	</insert>
+
+	<update id="updateTrack">
+		UPDATE Track
+		SET Name = #{track.name},
+		AlbumId = #{track.albumId},
+		MediaTypeId = #{track.mediaTypeId},
+		GenreId = #{track.genreId},
+		Composer = #{track.composer},
+		Milliseconds = #{track.milliseconds},
+		Bytes = #{track.bytes},
+		UnitPrice = #{track.unitPrice}
+		WHERE TrackId = #{id}
+	</update>
+
+	<delete id="deleteTrack">
+		DELETE FROM Track WHERE TrackId = #{id}
+	</delete>
+
+</mapper>
